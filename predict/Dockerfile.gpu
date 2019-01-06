@@ -27,13 +27,13 @@ ENV \
   MXNET_MODEL_SERVER_GPU_IMAGE=1 \
   gpu_id=0
 
-RUN \
-  echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list \
-  && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
-  && apt-get update \
-  && apt-get install --no-install-recommends -y --allow-unauthenticated sbt=1.0.2 \
-  && rm -rf /var/lib/apt/lists/* \
-  && apt-get clean
+#RUN \
+#  echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list \
+#  && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
+#  && apt-get update \
+#  && apt-get install --no-install-recommends -y --allow-unauthenticated sbt=1.0.2 \
+#  && rm -rf /var/lib/apt/lists/* \
+#  && apt-get clean
 
 COPY config/prometheus/ config/prometheus/
 ENV \
@@ -192,6 +192,31 @@ COPY jvm/ jvm/
 
 ENV \
   PIPELINE_JVM_MODEL_SERVER_PATH=/root/jvm
+
+#####################
+# Setup OpenJDK 1.11
+#####################
+RUN \
+  apt-get update \
+  && apt-get install -y software-properties-common \
+  && add-apt-repository -y ppa:openjdk-r/ppa \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends openjdk-11-jdk openjdk-11-jre-headless \
+  && apt-get install -y apt-transport-https \
+  && apt-get install -y wget \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+ENV \
+  JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+
+RUN \
+  echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list \
+  && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
+  && apt-get update \
+  && apt-get install --no-install-recommends -y --allow-unauthenticated sbt=1.2.7 \
+  && rm -rf /var/lib/apt/lists/* \
+  && apt-get clean
 
 RUN \
   cd $PIPELINE_JVM_MODEL_SERVER_PATH \
